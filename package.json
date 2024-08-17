@@ -26,8 +26,11 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "test": "vitest",
-    "publish": "pnpm publish --registry=https://registry.npmjs.org"
+    "test": "vitest"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
   },
   "devDependencies": {
     "tsup": "^8.2.4",
