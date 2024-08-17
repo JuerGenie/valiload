@@ -1,0 +1,35 @@
+{
+  "name": "valiload",
+  "version": "0.1.0",
+  "description": "A simple and lightweight library for overloading functions in TypeScript.",
+  "license": "MIT",
+  "keywords": [
+    "valibot",
+    "overload",
+    "typescript"
+  ],
+  "author": {
+    "name": "JuerGenie",
+    "email": "juergenie@outlook.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JuerGenie/valiload.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.4",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "valibot": "^0.37.0",
+    "vitest": "^2.0.5"
+  },
+  "peerDependencies": {
+    "valibot": "^0.37.0"
+  }
+}
