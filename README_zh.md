@@ -13,7 +13,7 @@
 1. 在您的项目中将`valiload`作为依赖项进行安装：
 
   ```bash
-  npm install valiload
+  npm install valiload valibot
   ```
 
 2. 在您的TypeScript文件中导入`valiload`：

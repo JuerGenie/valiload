@@ -1,6 +1,6 @@
 {
   "name": "valiload",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A simple and lightweight library for overloading functions in TypeScript.",
   "license": "MIT",
   "keywords": [
@@ -17,6 +17,9 @@
     "url": "https://github.com/JuerGenie/valiload.git"
   },
   "type": "module",
+  "files": [
+    "/dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",

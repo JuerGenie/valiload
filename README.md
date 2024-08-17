@@ -15,7 +15,7 @@ To use `valiload`, follow these steps:
 1. Install `valiload` as a dependency in your project:
 
   ```bash
-  npm install valiload
+  npm install valiload valibot
   ```
 
 2. Import `valiload` into your TypeScript file:

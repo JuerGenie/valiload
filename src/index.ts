@@ -74,5 +74,4 @@ export const valiload = (): Valiload => {
   return result;
 };
 
-export { v };
 export * from "valibot";
