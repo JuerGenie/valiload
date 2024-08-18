@@ -27,10 +27,14 @@
 3. 使用`valiload`语法定义您的重载函数：
 
   ```typescript
-  const MailSchema = z.object({
-    to: z.string().email(),
-    subject: z.string(),
-    body: z.string(),
+  const MailSchema = v.object({
+    to: v.pipe(
+      v.string(),
+      v.trim(),
+      v.email()
+    ),
+    subject: v.string(),
+    body: v.string(),
   });
 
   const overloadedFn = v.valiload()

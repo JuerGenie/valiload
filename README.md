@@ -27,14 +27,14 @@ To use `valiload`, follow these steps:
 3. Define your overloaded function using the `valiload` syntax:
 
   ```typescript
-  const MailSchema = z.object({
-    to: z.pipe(
+  const MailSchema = v.object({
+    to: v.pipe(
       v.string(),
       v.trim(),
       v.email()
     ),
-    subject: z.string(),
-    body: z.string(),
+    subject: v.string(),
+    body: v.string(),
   });
 
   const overloadedFn = v.valiload()
