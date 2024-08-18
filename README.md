@@ -28,7 +28,11 @@ To use `valiload`, follow these steps:
 
   ```typescript
   const MailSchema = z.object({
-    to: z.string().email(),
+    to: z.pipe(
+      v.string(),
+      v.trim(),
+      v.email()
+    ),
     subject: z.string(),
     body: z.string(),
   });

@@ -41,6 +41,13 @@ export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
    * @returns the overloaded function.
    */
   freeze: () => T;
+
+  /**
+   * Clones the current function.
+   *
+   * @returns the overloaded function
+   */
+  clone: () => Valiload<T>;
 };
 
 export type SchemaCacheEntry = [
@@ -69,6 +76,7 @@ const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
     };
     result.freeze = () => create(loaded, true);
   }
+  result.clone = () => create(loaded, freeze);
   return result;
 };
 

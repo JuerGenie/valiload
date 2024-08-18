@@ -65,4 +65,18 @@ describe("valiload", () => {
       "No overload matched for arguments: [string, string]"
     );
   });
+
+  it("should return a cloned function that can be independently overloaded", () => {
+    const fn1 = vi.fn();
+    const fn2 = vi.fn();
+    const overloadedFn = valiload().overload([v.string(), v.number()], fn1);
+    const clonedFn = overloadedFn.clone();
+
+    clonedFn("hello", 123);
+    expect(fn1).toHaveBeenCalledWith("hello", 123);
+
+    clonedFn.overload([v.number(), v.string()], fn2);
+    clonedFn(123, "hello");
+    expect(fn2).toHaveBeenCalledWith(123, "hello");
+  });
 });
