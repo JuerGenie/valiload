@@ -21,18 +21,27 @@ To use `valiload`, follow these steps:
 2. Import `valiload` into your TypeScript file:
 
   ```typescript
-  import { valiload, v } from 'valiload';
+  import * as v from 'valiload';
   ```
 
 3. Define your overloaded function using the `valiload` syntax:
 
   ```typescript
-  const overloadedFn = valiload()
+  const MailSchema = z.object({
+    to: z.string().email(),
+    subject: z.string(),
+    body: z.string(),
+  });
+
+  const overloadedFn = v.valiload()
     .overload([v.string(), v.number()], (a, b) => {
      // Function implementation for string and number arguments
     })
     .overload([v.number(), v.string()], (a, b) => {
      // Function implementation for number and string arguments
+    })
+    .overload([MailSchema], (mail) => {
+     // Function implementation for MailSchema arguments
     });
   ```
 
@@ -41,10 +50,11 @@ To use `valiload`, follow these steps:
   ```typescript
   overloadedFn("hello", 123); // Calls the first overload
   overloadedFn(123, "hello"); // Calls the second overload
+  overloadedFn({ to: "juergenie@mock.mail", subject: "Hello", body: "World" }); // Calls the third overload
   ```
 
   The function will execute the implementation that matches the types and order of the arguments.
 
 5. Enjoy the flexibility of overloaded functions in TypeScript!
 
-For more information on how to define schemas and handle different argument types, refer to the [valibot documentation](https://github.com/JuerGenie/valibot).
+For more information on how to define schemas and handle different argument types, refer to the [valibot documentation](https://valibot.dev/).

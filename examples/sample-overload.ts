@@ -1,7 +1,8 @@
-import { valiload, v } from ".";
+import * as v from "../src";
 
 class Test {
-  say = valiload()
+  say = v
+    .valiload()
     .overload([v.string()], (message: string) => {
       console.log(message, "from string");
     })

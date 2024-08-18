@@ -2,9 +2,11 @@
 
 一个简单且轻量级的用于在TypeScript中进行函数重载的库。
 
+[English Version](./README.md)
+
 ## 什么是valiload？
 
-`valiload`是一个TypeScript库，它允许您创建可以使用不同参数模式进行重载的函数。它提供了一种方便的方式来定义可以处理不同类型和参数组合的函数的多个版本。
+`valiload`是一个TypeScript库，允许您创建可以使用不同参数模式进行重载的函数。它提供了一种方便的方式来定义可以处理不同类型和参数组合的函数的多个版本。
 
 ## 使用方法
 
@@ -19,18 +21,27 @@
 2. 在您的TypeScript文件中导入`valiload`：
 
   ```typescript
-  import { valiload, v } from 'valiload';
+  import * as v from 'valiload';
   ```
 
 3. 使用`valiload`语法定义您的重载函数：
 
   ```typescript
-  const overloadedFn = valiload()
+  const MailSchema = z.object({
+    to: z.string().email(),
+    subject: z.string(),
+    body: z.string(),
+  });
+
+  const overloadedFn = v.valiload()
     .overload([v.string(), v.number()], (a, b) => {
-     // 适用于字符串和数字参数的函数实现
+     // 字符串和数字参数的函数实现
     })
     .overload([v.number(), v.string()], (a, b) => {
-     // 适用于数字和字符串参数的函数实现
+     // 数字和字符串参数的函数实现
+    })
+    .overload([MailSchema], (mail) => {
+     // MailSchema参数的函数实现
     });
   ```
 
@@ -39,10 +50,11 @@
   ```typescript
   overloadedFn("hello", 123); // 调用第一个重载
   overloadedFn(123, "hello"); // 调用第二个重载
+  overloadedFn({ to: "juergenie@mock.mail", subject: "Hello", body: "World" }); // 调用第三个重载
   ```
 
   函数将执行与参数的类型和顺序匹配的实现。
 
-5. 享受在TypeScript中使用重载函数的灵活性！
+5. 尽情享受在TypeScript中使用重载函数的灵活性！
 
-有关如何定义模式和处理不同参数类型的更多信息，请参阅[valibot文档](https://github.com/JuerGenie/valibot)。
+有关如何定义模式和处理不同参数类型的更多信息，请参阅[valibot文档](https://valibot.dev/)。

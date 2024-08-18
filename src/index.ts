@@ -1,6 +1,8 @@
 import * as v from "valibot";
 
-export interface Valiload {
+type ErrorOverload =
+  () => "Call valiload().overload() before calling this function.";
+export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
   /**
    * Overloads the function with a new schema.
    *
@@ -31,8 +33,44 @@ export interface Valiload {
   >(
     schema: Items,
     fn: Fn
-  ) => this & Fn;
-}
+  ) => Valiload<T extends ErrorOverload ? Fn : T & Fn>;
+
+  /**
+   * Creates a new function that is the same as the current one but is frozen.
+   *
+   * @returns the overloaded function.
+   */
+  freeze: () => T;
+};
+
+export type SchemaCacheEntry = [
+  v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+  (...args: any[]) => any
+];
+const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
+  const loaded = [...cache];
+  const result = ((...args: any[]) => {
+    for (const [schema, fn] of loaded) {
+      const result = v.safeParse(schema, args);
+      if (result.success) {
+        return fn(...(result.output as any[]));
+      }
+    }
+    throw new Error(
+      `No overload matched for arguments: [${args
+        .map((a) => typeof a)
+        .join(", ")}]`
+    );
+  }) as unknown as Valiload;
+  if (!freeze) {
+    result.overload = (schema, fn) => {
+      loaded.unshift([v.tuple(schema), fn]);
+      return result as any;
+    };
+    result.freeze = () => create(loaded, true);
+  }
+  return result;
+};
 
 /**
  * Creates a function that can be overloaded with different schemas.
@@ -49,29 +87,6 @@ export interface Valiload {
  * overloadedFn(42, "hello"); // throw "No overload matched for arguments: [number, string]"
  * ```
  */
-export const valiload = (): Valiload => {
-  const loaded = [] as [
-    v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
-    (...args: any[]) => any
-  ][];
-  const result = ((...args: any[]) => {
-    for (const [schema, fn] of loaded) {
-      const result = v.safeParse(schema, args);
-      if (result.success) {
-        return fn(...(result.output as any[]));
-      }
-    }
-    throw new Error(
-      `No overload matched for arguments: [${args
-        .map((a) => typeof a)
-        .join(", ")}]`
-    );
-  }) as unknown as Valiload;
-  result.overload = (schema, fn) => {
-    loaded.unshift([v.tuple(schema), fn]);
-    return result as any;
-  };
-  return result;
-};
+export const valiload = () => create();
 
 export * from "valibot";
