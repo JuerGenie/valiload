@@ -1,5 +1,21 @@
 import * as v from "valibot";
 
+export interface OverloadOptions {
+  /**
+   * Whether the schema should be matched loosely. Defaults to `false`,
+   * which means that the schema will be matched against the arguments
+   * in the order they are provided, and if there are more arguments than
+   * the schema, an error will be thrown.
+   *
+   * If `true`, the schema will be matched against the arguments in the
+   * order they are provided, but if there are more arguments than the
+   * schema, the extra arguments will be ignored.
+   *
+   * @default false
+   */
+  loose?: boolean;
+}
+
 type ErrorOverload =
   () => "Call valiload().overload() before calling this function.";
 export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
@@ -32,7 +48,8 @@ export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
     ) => any
   >(
     schema: Items,
-    fn: Fn
+    fn: Fn,
+    options?: OverloadOptions
   ) => Valiload<T extends ErrorOverload ? Fn : T & Fn>;
 
   /**
@@ -70,8 +87,11 @@ const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
     );
   }) as unknown as Valiload;
   if (!freeze) {
-    result.overload = (schema, fn) => {
-      loaded.unshift([v.tuple(schema), fn]);
+    result.overload = (schema, fn, options = {}) => {
+      loaded.unshift([
+        options.loose ? v.tuple(schema) : v.strictTuple(schema),
+        fn,
+      ]);
       return result as any;
     };
     result.freeze = () => create(loaded, true);
