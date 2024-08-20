@@ -1,6 +1,6 @@
 {
   "name": "valiload",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A simple and lightweight library for overloading functions in TypeScript.",
   "license": "MIT",
   "keywords": [
