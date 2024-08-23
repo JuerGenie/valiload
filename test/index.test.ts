@@ -123,4 +123,15 @@ describe("valiload", () => {
       "No overload matched for arguments: [string, number, string]"
     );
   });
+
+  it("should execute the fallback function when no overload matches the arguments", () => {
+    const fallbackFn = vi.fn();
+    const overloadedFn = valiload(fallbackFn)
+      .overload([v.string(), v.number()], vi.fn())
+      .overload([v.number(), v.string()], vi.fn());
+
+    overloadedFn(true, false);
+
+    expect(fallbackFn).toHaveBeenCalled();
+  });
 });

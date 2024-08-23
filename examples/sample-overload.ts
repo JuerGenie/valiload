@@ -3,11 +3,13 @@ import * as v from "../src";
 class Test {
   say = v
     .valiload()
-    .overload([v.string()], (message: string) => {
+    .overload([v.string()], (message) => {
       console.log(message, "from string");
+      return { message };
     })
-    .overload([v.number()], (number: number) => {
+    .overload([v.number()], (number) => {
       console.log(number, "from number");
+      return { number };
     });
 }
 

@@ -1,5 +1,42 @@
 import * as v from "valibot";
 
+const getArgsTip = (args: any[]) => args.map((a) => typeof a).join(", ");
+const createError = (args: any[]) =>
+  new Error(`No overload matched for arguments: [${getArgsTip(args)}]`);
+
+type TupleToIntersection<T extends any[]> = {
+  [K in keyof T]: (x: T[K]) => void;
+} extends {
+  [K: number]: (x: infer I) => void;
+}
+  ? I
+  : never;
+
+export interface OverloadFn<T extends Array<(...args: any[]) => any>> {
+  <
+    const Items extends v.TupleItems,
+    Schema extends v.TupleSchema<Items, undefined> = v.TupleSchema<
+      Items,
+      undefined
+    >,
+    const Fn extends (...args: v.InferOutput<Schema>) => any = (
+      ...args: v.InferOutput<Schema>
+    ) => any
+  >(
+    schema: Items,
+    fn: Fn,
+    options?: OverloadOptions
+  ): Valiload<T extends [ErrorOverload] ? [Fn] : [Fn, ...T]>;
+}
+
+export interface FreezeFn<T extends Array<(...args: any[]) => any>> {
+  (): TupleToIntersection<T>;
+}
+
+export interface CloneFn<T extends Array<(...args: any[]) => any>> {
+  (): Valiload<T>;
+}
+
 export interface OverloadOptions {
   /**
    * Whether the schema should be matched loosely. Defaults to `false`,
@@ -18,7 +55,9 @@ export interface OverloadOptions {
 
 type ErrorOverload =
   () => "Call valiload().overload() before calling this function.";
-export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
+export type Valiload<
+  T extends Array<(...args: any[]) => any> = [ErrorOverload]
+> = TupleToIntersection<T> & {
   /**
    * Overloads the function with a new schema.
    *
@@ -37,41 +76,39 @@ export type Valiload<T extends (...args: any[]) => any = ErrorOverload> = T & {
    * overloadedFn(123, "hello"); // logs "number and string" { a: 123, b: "hello" }
    * ```
    */
-  overload: <
-    const Items extends v.TupleItems,
-    Schema extends v.TupleSchema<Items, undefined> = v.TupleSchema<
-      Items,
-      undefined
-    >,
-    Fn extends (...args: v.InferOutput<Schema>) => any = (
-      ...args: v.InferOutput<Schema>
-    ) => any
-  >(
-    schema: Items,
-    fn: Fn,
-    options?: OverloadOptions
-  ) => Valiload<T extends ErrorOverload ? Fn : T & Fn>;
+  overload: OverloadFn<T>;
 
   /**
    * Creates a new function that is the same as the current one but is frozen.
    *
    * @returns the overloaded function.
    */
-  freeze: () => T;
+  freeze: FreezeFn<T>;
 
   /**
    * Clones the current function.
    *
    * @returns the overloaded function
    */
-  clone: () => Valiload<T>;
+  clone: CloneFn<T>;
 };
 
 export type SchemaCacheEntry = [
   v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
   (...args: any[]) => any
 ];
-const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
+
+interface CreateOptions<Fallback extends (...args: any[]) => any> {
+  cache?: SchemaCacheEntry[];
+  freeze?: boolean;
+
+  fallback?: Fallback;
+}
+const create = <Fallback extends (...args: any[]) => any>({
+  cache = [],
+  freeze = false,
+  fallback,
+}: CreateOptions<Fallback> = {}) => {
   const loaded = [...cache];
   const result = ((...args: any[]) => {
     for (const [schema, fn] of loaded) {
@@ -80,12 +117,11 @@ const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
         return fn(...(result.output as any[]));
       }
     }
-    throw new Error(
-      `No overload matched for arguments: [${args
-        .map((a) => typeof a)
-        .join(", ")}]`
-    );
-  }) as unknown as Valiload;
+    if (fallback) {
+      return fallback(...args);
+    }
+    throw createError(args);
+  }) as unknown as Valiload<[Fallback]>;
   if (!freeze) {
     result.overload = (schema, fn, options = {}) => {
       loaded.unshift([
@@ -94,27 +130,42 @@ const create = (cache: SchemaCacheEntry[] = [], freeze: boolean = false) => {
       ]);
       return result as any;
     };
-    result.freeze = () => create(loaded, true);
+    result.freeze = () => create({ cache: loaded, freeze: true });
   }
-  result.clone = () => create(loaded, freeze);
+  result.clone = () => create({ cache: loaded, freeze });
   return result;
 };
 
 /**
  * Creates a function that can be overloaded with different schemas.
  *
+ * @param fallback the function to execute when no overload matches the arguments. If not provided, an error will be thrown when no overload matches.
+ *
  * @returns a function that can be overloaded with different schemas.
  *
  * @example
  *
- * ```ts
- * const overloadedFn = valiload()
- *   .overload([v.string(), v.number()], (a, b) => console.log("string and number", { a, b }));
+ * - Without fallback:
+ *   ```ts
+ *   const overloadedFn = valiload()
+ *     .overload([v.string(), v.number()], (a, b) => console.log("string and number", { a, b }));
  *
- * overloadedFn("hello", 42); // logs "string and number" { a: "hello", b: 42 }
- * overloadedFn(42, "hello"); // throw "No overload matched for arguments: [number, string]"
- * ```
+ *   overloadedFn("hello", 42); // logs "string and number" { a: "hello", b: 42 }
+ *   overloadedFn(42, "hello"); // throw "No overload matched for arguments: [number, string]"
+ *   ```
+ * - With fallback:
+ *   ```ts
+ *   const overloadedFn = valiload(() => "fallback")
+ *     .overload([v.string(), v.number()], (a, b) => console.log("string and number", { a, b }));
+ *
+ *   overloadedFn("hello", 42); // logs "string and number" { a: "hello", b: 42 }
+ *   overloadedFn(42, "hello"); // return "fallback" as no overload matched
+ *   ```
  */
-export const valiload = () => create();
+export const valiload = <
+  Fallback extends (...args: any[]) => any = ErrorOverload
+>(
+  fallback?: Fallback
+) => create({ fallback });
 
 export * from "valibot";
