@@ -7,5 +7,5 @@ export const tsup: Options = {
   skipNodeModulesBundle: true,
   target: "es2020",
   outDir: "dist",
-  entry: ["src/**/*.ts"],
+  entry: ["src/index.ts", "src/fallback.ts"],
 };

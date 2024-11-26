@@ -1,4 +1,4 @@
-import { valiload } from "../src/index";
+import { valiload } from "valiload";
 import * as v from "valibot";
 import { describe, it, expect, vi } from "vitest";
 
@@ -16,17 +16,13 @@ describe("valiload", () => {
     const fn = vi.fn();
     const overloadedFn = valiload().overload([v.string(), v.number()], fn);
 
-    expect(() => overloadedFn("hello", "world")).toThrow(
-      "No overload matched for arguments: [string, string]"
-    );
+    expect(() => overloadedFn("hello", "world")).toThrow("No overload matched for arguments: [string, string]");
   });
 
   it("should execute the first and second function when the input matches the first and second schema", () => {
     const fn1 = vi.fn();
     const fn2 = vi.fn();
-    const overloadedFn = valiload()
-      .overload([v.string(), v.number()], fn1)
-      .overload([v.number(), v.string()], fn2);
+    const overloadedFn = valiload().overload([v.string(), v.number()], fn1).overload([v.number(), v.string()], fn2);
 
     overloadedFn("hello", 123);
     overloadedFn(123, "hello");
@@ -41,9 +37,7 @@ describe("valiload", () => {
     const frozenFn = overloadedFn.freeze();
 
     // @ts-expect-error
-    expect(() => frozenFn.overload([v.number(), v.string()], fn)).toThrow(
-      "frozenFn.overload is not a function"
-    );
+    expect(() => frozenFn.overload([v.number(), v.string()], fn)).toThrow("frozenFn.overload is not a function");
   });
 
   it("should return a frozen function that still executes the original function", () => {
@@ -61,21 +55,19 @@ describe("valiload", () => {
     const overloadedFn = valiload().overload([v.string(), v.number()], fn);
     const frozenFn = overloadedFn.freeze();
 
-    expect(() => frozenFn("hello", "world")).toThrow(
-      "No overload matched for arguments: [string, string]"
-    );
+    expect(() => frozenFn("hello", "world")).toThrow("No overload matched for arguments: [string, string]");
   });
 
   it("should return a cloned function that can be independently overloaded", () => {
-    const fn1 = vi.fn();
-    const fn2 = vi.fn();
-    const overloadedFn = valiload().overload([v.string(), v.number()], fn1);
-    const clonedFn = overloadedFn.clone();
+    const fn1 = vi.fn() as (...args: any[]) => any;
+    const fn2 = vi.fn() as (...args: any[]) => any;
+    const originalFn = valiload().overload([v.string(), v.number()], fn1);
+    let clonedFn = originalFn.clone();
 
     clonedFn("hello", 123);
     expect(fn1).toHaveBeenCalledWith("hello", 123);
 
-    clonedFn.overload([v.number(), v.string()], fn2);
+    clonedFn = clonedFn.overload([v.number(), v.string()], fn2);
     clonedFn(123, "hello");
     expect(fn2).toHaveBeenCalledWith(123, "hello");
   });
@@ -108,9 +100,7 @@ describe("valiload", () => {
       loose: false,
     });
 
-    expect(() => overloadedFn("hello")).toThrow(
-      "No overload matched for arguments: [string]"
-    );
+    expect(() => overloadedFn("hello")).toThrow("No overload matched for arguments: [string]");
   });
 
   it("should throw an error when the input has more arguments than the schema and options.loose is set to false", () => {
