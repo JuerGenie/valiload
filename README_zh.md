@@ -1,5 +1,7 @@
 # valiload
 
+> 请参阅 [`@chrock-studio/overload`](https://github.com/chrock-studio/toolbox/tree/main/packages/overload) 的新版本。
+
 一个简单且轻量级的用于在 TypeScript 中进行函数重载的库。
 
 [English Version](./README.md)

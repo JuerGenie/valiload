@@ -1,5 +1,7 @@
 # valiload
 
+> See the new version of [`@chrock-studio/overload`](https://github.com/chrock-studio/toolbox/tree/main/packages/overload).
+
 A simple and lightweight library for overloading functions in TypeScript.
 
 [中文版本](./README_zh.md)
